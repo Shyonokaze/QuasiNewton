@@ -21,7 +21,7 @@ class fit_QN(object):
     def cost(self):
         return np.mean(np.square(np.array(self.func(self.a,self.input))-self.Y))
     
-    def dcost(self,da):
+    def __dcost(self,da):
         dc=[]
         df=np.array(self.func(da,self.input))-self.Y
         for i in range(len(da)):
@@ -32,16 +32,32 @@ class fit_QN(object):
     
     
     def DFP(self):
-        Gra_L2=np.sum(np.square(self.dcost(self.a)))
+        Gra_L2=np.sum(np.square(self.__dcost(self.a)))
         while Gra_L2 > self.limit:
             a_old=self.a.copy()
-            ds=-self.lr*np.array(np.matmul(self.D,self.dcost(self.a).T))[0]
+            ds=-self.lr*np.array(np.matmul(self.D,self.__dcost(self.a).T))[0]
             self.a=self.a+ds
-            dy=self.dcost(self.a)-self.dcost(a_old)
+            dy=self.__dcost(self.a)-self.__dcost(a_old)
             self.D=self.D+\
             np.matmul(np.mat(ds).T,np.mat(ds))/np.matmul(np.mat(ds),np.mat(dy).T)-\
             np.matmul(np.matmul(np.matmul(self.D,np.mat(dy).T),np.mat(dy)),self.D)/np.matmul(np.matmul(np.mat(dy),self.D),np.mat(dy).T)
-            Gra_L2=np.sum(np.square(self.dcost(self.a)))
+            Gra_L2=np.sum(np.square(self.__dcost(self.a)))
+            
+    def BFGS(self):
+        Gra_L2=np.sum(np.square(self.__dcost(self.a)))
+        while Gra_L2>self.limit:
+            a_old=self.a.copy()
+            ds=-self.lr*np.array(np.matmul(self.B,self.__dcost(self.a).T))[0]
+            self.a=self.a+ds
+            dy=self.__dcost(self.a)-self.__dcost(a_old)
+            II=np.mat(np.eye(len(self.a)))
+            sy_mat=np.matmul(np.mat(ds).T,np.mat(dy))
+            ys=np.matmul(np.mat(dy),np.mat(ds).T)
+            ys_mat=np.matmul(np.mat(dy).T,np.mat(ds))
+            ss_mat=np.matmul(np.mat(ds).T,np.mat(ds))
+            self.B=np.matmul(np.matmul((II-sy_mat/ys),self.B),(II-ys_mat/ys))+ss_mat/ys
+            Gra_L2=np.sum(np.square(self.__dcost(self.a)))
+            
 
 
 if __name__=='__main__':
@@ -56,12 +72,12 @@ if __name__=='__main__':
     def dfun_a(a,x):
         return [x**2,x,1]
 
-    x=np.array([np.random.uniform()*10 for i in range(10000)])
+    x=np.array([np.random.uniform()*10 for i in range(100)])
     y=target(x)
 
-    fit=fit_QN([1,1,1],x,y,[1e-1,1e-1,1e-1],function,dfun_a,limit=1e-16)
+    fit=fit_QN([1,1,1],x,y,[1e-1,1e-1,1e-1],function,dfun_a,limit=1e-8)
 
+    fit.BFGS()
+    print(fit.a)
     fit.DFP()
     print(fit.a)
-    
-    
