@@ -1,0 +1,3 @@
+# QuasiNewton
+
+Fitting programing exercise
