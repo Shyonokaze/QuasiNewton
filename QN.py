@@ -7,7 +7,7 @@ Created on Mon Dec 25 15:00:00 2017
 
 class fit_QN(object):
     import numpy as np
-    def __init__(self,a_init,X,Y,lr,func,dfunc_a,limit=1e-8,step=1e3):
+    def __init__(self,a_init,X,Y,lr,func,dfunc_a,limit=1e-8,step=None):
         self.a=np.array(a_init)
         self.input=np.array(X)
         self.Y=np.array(Y)
@@ -62,9 +62,10 @@ class fit_QN(object):
         Gra_L2=np.sum(np.square(self.__dcost(self.a)))
         k=0
         while Gra_L2>self.limit:
-            if not k%self.show:
-                print('Step:%d'%k)
-                print(self.a)
+            if self.show is not None:
+                if not k%self.show:
+                    print('Step:%d'%k)
+                    print(self.a)
             a_old=self.a.copy()
             ds=-self.lr*np.array(np.matmul(self.B,self.__dcost(self.a).T))[0]
             self.a=self.a+ds
@@ -84,7 +85,7 @@ if __name__=='__main__':
     import numpy as np
 
     def target(x):
-        return 3*x[:,0]*np.exp(2*x[:,1])
+        return 3*x[:,0]*np.exp(2*x[:,1])+np.random.uniform()
 
     def function(a,x):
         return a[0]*x[:,0]*np.exp(a[1]*x[:,1])
@@ -95,10 +96,10 @@ if __name__=='__main__':
     x=np.array([[np.random.uniform()*10,np.random.uniform()] for i in range(100)])
     y=target(x)
 
-    fit=fit_QN([2,2],x,y,[1e-3,1e-3],function,dfun_a,limit=1e-8)
+    fit=fit_QN([2,2],x,y,[1e-3,1e-3],function,dfun_a,limit=1e-8,step=1000)
 
 
-#    fit.BFGS()
-#    print(fit.a)
-    fit.DFP()
+    fit.BFGS()
     print(fit.a)
+#    fit.DFP()
+#    print(fit.a)
