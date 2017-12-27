@@ -29,17 +29,7 @@ class fit_QN(object):
             dc.append(2*np.mean(df*
                                 np.array(self.dfunc(da,self.input)[i])))
 
-        return np.array(dc)
-
-
-    def ddcost(self,da):
-        dc=[]
-        df=np.array(self.func(da,self.input))-self.Y
-        for i in range(len(da)):
-            dc.append(2*np.mean(df*
-                                np.array(self.dfunc(da,self.input)[i])))
-
-        return np.array(dc)    
+        return np.array(dc)  
     
     def DFP(self):
         Gra_L2=np.sum(np.square(self.__dcost(self.a)))
